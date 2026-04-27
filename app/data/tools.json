@@ -1,0 +1,195 @@
+{
+  "vision": {
+    "tagline": "BTRFS Mission Control: calm, capable, and comprehensive.",
+    "ux_principles": [
+      "Progressive disclosure: start simple, reveal depth when requested.",
+      "Safety rails: dangerous actions are grouped, explained, and confirmation-gated.",
+      "Visual confidence: RAID and topology screens prioritize recognizable drive graphics and status colors."
+    ]
+  },
+  "btrfs_progs": {
+    "docs": "https://btrfs.readthedocs.io/en/latest/",
+    "functional_areas": [
+      {
+        "name": "Filesystem Lifecycle",
+        "commands": ["filesystem", "subvolume", "device", "check", "restore", "rescue", "inspect-internal"]
+      },
+      {
+        "name": "Data Placement & RAID",
+        "commands": ["balance", "replace", "device add", "device remove", "filesystem resize"]
+      },
+      {
+        "name": "Reliability & Maintenance",
+        "commands": ["scrub", "quota", "qgroup", "defragment", "property", "send", "receive"]
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "btrfs-progs",
+      "kind": "core",
+      "category": "Core BTRFS",
+      "repo": "https://github.com/kdave/btrfs-progs",
+      "docs": "https://btrfs.readthedocs.io/en/latest/",
+      "interface_hints": ["Command palette", "Context menus", "Safety confirmations"]
+    },
+    {
+      "name": "btrbk",
+      "kind": "backup",
+      "category": "Snapshot & Replication",
+      "repo": "https://github.com/digint/btrbk",
+      "docs": "https://github.com/digint/btrbk",
+      "interface_hints": ["Schedule wizard", "Retention matrix"]
+    },
+    {
+      "name": "btrfsmaintenance",
+      "kind": "maintenance",
+      "category": "Maintenance",
+      "repo": "https://github.com/kdave/btrfsmaintenance",
+      "docs": "https://github.com/kdave/btrfsmaintenance",
+      "interface_hints": ["Toggle cards", "Timer status panel"]
+    },
+    {
+      "name": "bees",
+      "kind": "dedupe",
+      "category": "Maintenance",
+      "repo": "https://github.com/Zygo/bees",
+      "docs": "https://github.com/Zygo/bees",
+      "interface_hints": ["Throughput chart", "Compression ratio indicator"]
+    },
+    {
+      "name": "duperemove",
+      "kind": "dedupe",
+      "category": "Maintenance",
+      "repo": "https://github.com/markfasheh/duperemove",
+      "docs": "https://github.com/markfasheh/duperemove",
+      "interface_hints": ["Path picker", "Block-level preview"]
+    },
+    {
+      "name": "duperemove-timer",
+      "kind": "automation",
+      "category": "Maintenance",
+      "repo": "https://github.com/AnotherStranger/duperemove-timer",
+      "docs": "https://github.com/AnotherStranger/duperemove-timer",
+      "interface_hints": ["Systemd timer wizard"]
+    },
+    {
+      "name": "btrfsd",
+      "kind": "daemon",
+      "category": "Monitoring",
+      "repo": "https://github.com/ximion/btrfsd",
+      "docs": "https://github.com/ximion/btrfsd",
+      "interface_hints": ["Live health dashboard", "Notification rules"]
+    },
+    {
+      "name": "ntfs2btrfs",
+      "kind": "migration",
+      "category": "Migration & Conversion",
+      "repo": "https://github.com/maharmstone/ntfs2btrfs",
+      "docs": "https://github.com/maharmstone/ntfs2btrfs",
+      "interface_hints": ["Source-target selector", "Dry-run diff panel"]
+    },
+    {
+      "name": "btrfs-heatmap",
+      "kind": "analysis",
+      "category": "Monitoring",
+      "repo": "https://github.com/knorrie/btrfs-heatmap",
+      "docs": "https://github.com/knorrie/btrfs-heatmap",
+      "interface_hints": ["Thermal-style IO map", "Timeline scrubber"]
+    },
+    {
+      "name": "snapraid-btrfs",
+      "kind": "hybrid-raid",
+      "category": "RAID & Layout",
+      "repo": "https://github.com/automorphism88/snapraid-btrfs",
+      "docs": "https://github.com/automorphism88/snapraid-btrfs",
+      "interface_hints": ["Parity plan builder", "Disk role badges"]
+    },
+    {
+      "name": "buttersink",
+      "kind": "replication",
+      "category": "Snapshot & Replication",
+      "repo": "https://github.com/AmesCornish/buttersink",
+      "docs": "https://github.com/AmesCornish/buttersink",
+      "interface_hints": ["Stream pipeline viewer"]
+    },
+    {
+      "name": "btdu",
+      "kind": "analysis",
+      "category": "Monitoring",
+      "repo": "https://github.com/CyberShadow/btdu",
+      "docs": "https://github.com/CyberShadow/btdu",
+      "interface_hints": ["Treemap browser", "Top consumers list"]
+    },
+    {
+      "name": "undelete-btrfs",
+      "kind": "recovery",
+      "category": "Rescue & Recovery",
+      "repo": "https://github.com/danthem/undelete-btrfs",
+      "docs": "https://github.com/danthem/undelete-btrfs",
+      "interface_hints": ["Recovery candidate table", "Confidence scores"]
+    },
+    {
+      "name": "ButterManager",
+      "kind": "gui",
+      "category": "Desktop UX Reference",
+      "repo": "https://github.com/egara/buttermanager",
+      "docs": "https://github.com/egara/buttermanager",
+      "interface_hints": ["Snapshot timeline", "Rollback wizard"]
+    },
+    {
+      "name": "btrfs-data-recovery",
+      "kind": "recovery",
+      "category": "Rescue & Recovery",
+      "repo": "https://github.com/davispuh/btrfs-data-recovery",
+      "docs": "https://github.com/davispuh/btrfs-data-recovery",
+      "interface_hints": ["Guided rescue checklist"]
+    },
+    {
+      "name": "check_disk_btrfs",
+      "kind": "monitoring",
+      "category": "Monitoring",
+      "repo": "https://github.com/NETWAYS/check_disk_btrfs",
+      "docs": "https://github.com/NETWAYS/check_disk_btrfs",
+      "interface_hints": ["Threshold sliders", "Alert severity chips"]
+    },
+    {
+      "name": "awesome-btrfs",
+      "kind": "index",
+      "category": "Discovery",
+      "repo": "https://github.com/boredsquirrel/awesome-btrfs",
+      "docs": "https://github.com/boredsquirrel/awesome-btrfs",
+      "interface_hints": ["Curated links explorer", "Filter by task"]
+    }
+  ],
+  "navigation": [
+    {
+      "section": "Setup & Create",
+      "description": "Disk discovery, filesystem creation, labels, UUID, and mount planning."
+    },
+    {
+      "section": "RAID & Layout",
+      "description": "Visual RAID profile planner with drive cards, chunk simulation, and balance helpers."
+    },
+    {
+      "section": "Snapshots & Replication",
+      "description": "Snapshot lifecycle, send/receive, backup retention, and off-host synchronization."
+    },
+    {
+      "section": "Maintenance",
+      "description": "Scrub, trim, balance, dedupe, quotas, and scheduled maintenance flows."
+    },
+    {
+      "section": "Migration",
+      "description": "NTFS conversion and structured migration with dry-run checks."
+    },
+    {
+      "section": "Rescue & Recovery",
+      "description": "Safe-first workflows for restore, rescue, undelete, and incident triage."
+    },
+    {
+      "section": "Observability",
+      "description": "Heatmaps, usage maps, checks, alerts, and service integration."
+    }
+  ]
+}

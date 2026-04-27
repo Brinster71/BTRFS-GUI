@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BTRFS Mission Control</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --card: #1f2937;
+        --muted: #9ca3af;
+        --text: #f9fafb;
+        --accent: #22d3ee;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, Segoe UI, sans-serif;
+        background: linear-gradient(180deg, #020617, #0f172a);
+        color: var(--text);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      .hero, .panel {
+        background: rgba(17, 24, 39, 0.92);
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .hero h1 { margin: 0; }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 16px;
+      }
+      .pill {
+        display: inline-block;
+        margin: 4px 6px 0 0;
+        padding: 4px 10px;
+        background: #0c4a6e;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+      .category { margin-bottom: 20px; }
+      .tool {
+        background: var(--card);
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+      }
+      a { color: var(--accent); }
+      ul { padding-left: 20px; }
+      .muted { color: var(--muted); }
+      @media (max-width: 900px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <section class="hero">
+        <h1>BTRFS Mission Control</h1>
+        <p>{{ catalog.tagline }}</p>
+        {% for principle in catalog.ux_principles %}
+        <span class="pill">{{ principle }}</span>
+        {% endfor %}
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Navigation Strategy</h2>
+          {% for nav in catalog.navigation %}
+          <div>
+            <h3>{{ nav.section }}</h3>
+            <p class="muted">{{ nav.description }}</p>
+          </div>
+          {% endfor %}
+
+          <h2>btrfs-progs Function Coverage</h2>
+          {% for area in catalog.functional_areas %}
+          <h3>{{ area.name }}</h3>
+          <ul>
+            {% for cmd in area.commands %}
+            <li><code>{{ cmd }}</code></li>
+            {% endfor %}
+          </ul>
+          {% endfor %}
+          <p>
+            Primary docs: <a href="https://btrfs.readthedocs.io/en/latest/" target="_blank">btrfs-progs manual</a>
+          </p>
+        </article>
+
+        <article class="panel">
+          <h2>Integrated Tooling Catalog</h2>
+          {% for category, tools in grouped.items() %}
+          <section class="category">
+            <h3>{{ category }}</h3>
+            {% for tool in tools %}
+            <div class="tool">
+              <strong>{{ tool.name }}</strong> <span class="muted">({{ tool.kind }})</span>
+              <p>
+                <a href="{{ tool.repo }}" target="_blank">Repository</a> ·
+                <a href="{{ tool.docs }}" target="_blank">Docs</a>
+              </p>
+              <ul>
+                {% for hint in tool.interface_hints %}
+                <li>{{ hint }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endfor %}
+          </section>
+          {% endfor %}
+        </article>
+      </section>
+    </div>
+  </body>
+</html>
