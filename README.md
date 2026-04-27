@@ -1,51 +1,56 @@
-# BTRFS-GUI
+# BTRFS-GUI (Admin Console)
 
-A one-stop BTRFS administration suite with:
+This project now delivers actual **administrative tools** for BTRFS instead of only a reference catalog.
 
-1. **Desktop app** (Tkinter) for local operating-system installation.
-2. **Web app** (Flask) suitable for running in a **Docker container**.
+## Deliverables
 
-The project organizes BTRFS administration into clear sections:
-- File system creation & device onboarding
-- RAID profile setup and balancing
-- Snapshot/backup/replication workflows
-- Maintenance/dedupe/scrub/trim/quotas
-- Rescue/repair/recovery tooling
+1. **Desktop application** (Tkinter): execute BTRFS operations from a local OS install.
+2. **Web application + Docker container** (Flask): execute the same operations via browser.
 
-Each section includes links to the upstream application/docs used as its foundation.
+## What it administers right now
 
-## Quick start
+- File system creation (`mkfs.btrfs`)
+- RAID profile conversion / balance (`btrfs balance start`)
+- Scrub (`btrfs scrub start -B`)
+- Subvolume snapshot
+- Quota enable
+- Device add/remove
+- Filesystem resize
+- Readonly check
+- Restore extract
+- Send/receive stream file workflows
 
-### Local (desktop app)
+## Safety model
+
+- **Dry run is default** in both desktop and web UI.
+- Operations marked destructive are blocked unless:
 
 ```bash
-python -m app.desktop_app
+export BTRFS_GUI_ALLOW_DESTRUCTIVE=true
 ```
 
-### Local (web app)
+## Run locally
 
 ```bash
 pip install -r requirements.txt
+python -m app.desktop_app
+# or
 python -m app.web_app
 ```
 
-Open: `http://127.0.0.1:5000`
+Web URL: <http://127.0.0.1:5000>
 
-### Docker (web interface)
+## Run with Docker
 
 ```bash
-docker build -t btrfs-gui-web .
-docker run --rm -p 5000:5000 btrfs-gui-web
+docker build -t btrfs-admin-web .
+docker run --rm -p 5000:5000 \
+  -e BTRFS_GUI_ALLOW_DESTRUCTIVE=false \
+  btrfs-admin-web
 ```
 
-Then open `http://127.0.0.1:5000`.
-
-## Testing
+## Tests
 
 ```bash
 python -m pytest -q
 ```
-
-## Notes
-
-This repository focuses on **interface aggregation and orchestration planning**. It does not bundle or execute privileged BTRFS operations directly by default. Instead, it maps and organizes tools/commands so users can navigate safely and intentionally.

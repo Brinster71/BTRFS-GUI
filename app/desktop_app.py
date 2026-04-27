@@ -1,167 +1,124 @@
-"""Desktop interface for BTRFS GUI (Tkinter)."""
+"""Desktop BTRFS administration interface."""
 
 from __future__ import annotations
 
 import tkinter as tk
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
-import webbrowser
 
-from app.catalog import load_catalog, tools_by_category, Tool
+from app.operations import OPERATIONS, Operation, run_operation
 
 
-class DesktopBtrfsGui(tk.Tk):
+class DesktopBtrfsAdmin(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("BTRFS Mission Control")
-        self.geometry("1150x760")
+        self.title("BTRFS Admin Console")
+        self.geometry("1120x760")
 
-        self.catalog = load_catalog()
-        self.grouped_tools = tools_by_category(self.catalog)
+        self.operation = OPERATIONS[0]
+        self.entries: dict[str, ttk.Entry] = {}
+        self.allow_execute = tk.BooleanVar(value=False)
 
-        self._build_layout()
+        self._build()
 
-    def _build_layout(self) -> None:
-        root = ttk.Frame(self, padding=12)
-        root.pack(fill=tk.BOTH, expand=True)
+    def _build(self) -> None:
+        outer = ttk.Frame(self, padding=10)
+        outer.pack(fill=tk.BOTH, expand=True)
 
-        hero = ttk.Label(
-            root,
-            text=self.catalog.tagline,
+        ttk.Label(
+            outer,
+            text="BTRFS Administrative Tools",
             font=("Segoe UI", 16, "bold"),
+        ).pack(anchor=tk.W, pady=(0, 8))
+
+        paned = ttk.PanedWindow(outer, orient=tk.HORIZONTAL)
+        paned.pack(fill=tk.BOTH, expand=True)
+
+        left = ttk.Frame(paned, padding=8)
+        right = ttk.Frame(paned, padding=8)
+        paned.add(left, weight=1)
+        paned.add(right, weight=2)
+
+        ttk.Label(left, text="Operations", font=("Segoe UI", 11, "bold")).pack(anchor=tk.W)
+        self.op_list = tk.Listbox(left, exportselection=False)
+        for op in OPERATIONS:
+            suffix = " [destructive]" if op.destructive else ""
+            self.op_list.insert(tk.END, f"{op.title}{suffix}")
+        self.op_list.bind("<<ListboxSelect>>", self._choose_operation)
+        self.op_list.pack(fill=tk.BOTH, expand=True)
+
+        self.form_frame = ttk.Frame(right)
+        self.form_frame.pack(fill=tk.X)
+
+        self.desc = ttk.Label(right, text="", wraplength=650)
+        self.desc.pack(anchor=tk.W, pady=(0, 8))
+
+        ttk.Checkbutton(
+            right,
+            text="Execute command (unchecked = dry run)",
+            variable=self.allow_execute,
+        ).pack(anchor=tk.W, pady=(0, 8))
+
+        ttk.Button(right, text="Run", command=self._run).pack(anchor=tk.W, pady=(0, 8))
+
+        self.output = ScrolledText(right, wrap=tk.WORD)
+        self.output.pack(fill=tk.BOTH, expand=True)
+
+        self.op_list.selection_set(0)
+        self._refresh_form()
+
+    def _choose_operation(self, _event: object | None = None) -> None:
+        sel = self.op_list.curselection()
+        if not sel:
+            return
+        self.operation = OPERATIONS[sel[0]]
+        self._refresh_form()
+
+    def _refresh_form(self) -> None:
+        for child in self.form_frame.winfo_children():
+            child.destroy()
+        self.entries = {}
+
+        self.desc.configure(
+            text=f"{self.operation.command_family}: {self.operation.description}"
         )
-        hero.pack(anchor=tk.W, pady=(0, 10))
 
-        splitter = ttk.PanedWindow(root, orient=tk.HORIZONTAL)
-        splitter.pack(fill=tk.BOTH, expand=True)
+        for idx, field in enumerate(self.operation.fields):
+            ttk.Label(self.form_frame, text=field.label).grid(row=idx, column=0, sticky=tk.W, pady=4)
+            entry = ttk.Entry(self.form_frame, width=72)
+            entry.grid(row=idx, column=1, sticky=tk.EW, pady=4)
+            if field.placeholder:
+                entry.insert(0, field.placeholder)
+            self.entries[field.key] = entry
 
-        nav_frame = ttk.Frame(splitter, padding=8)
-        details_frame = ttk.Frame(splitter, padding=8)
-        splitter.add(nav_frame, weight=1)
-        splitter.add(details_frame, weight=3)
-
-        ttk.Label(nav_frame, text="Sections", font=("Segoe UI", 11, "bold")).pack(anchor=tk.W)
-        self.section_list = tk.Listbox(nav_frame, exportselection=False, height=20)
-        for item in self.catalog.navigation:
-            self.section_list.insert(tk.END, item["section"])
-        self.section_list.bind("<<ListboxSelect>>", self._on_section_selected)
-        self.section_list.pack(fill=tk.BOTH, expand=True, pady=(8, 8))
-
-        self.section_text = ScrolledText(nav_frame, wrap=tk.WORD, height=8)
-        self.section_text.pack(fill=tk.BOTH, expand=False)
-
-        notebook = ttk.Notebook(details_frame)
-        notebook.pack(fill=tk.BOTH, expand=True)
-
-        tools_tab = ttk.Frame(notebook)
-        btrfs_tab = ttk.Frame(notebook)
-        notebook.add(tools_tab, text="Tool Catalog")
-        notebook.add(btrfs_tab, text="btrfs-progs Coverage")
-
-        self._build_tool_tab(tools_tab)
-        self._build_btrfs_tab(btrfs_tab)
-
-        self.section_list.selection_set(0)
-        self._on_section_selected()
-
-    def _build_tool_tab(self, parent: ttk.Frame) -> None:
-        split = ttk.PanedWindow(parent, orient=tk.HORIZONTAL)
-        split.pack(fill=tk.BOTH, expand=True)
-
-        left = ttk.Frame(split, padding=8)
-        right = ttk.Frame(split, padding=8)
-        split.add(left, weight=1)
-        split.add(right, weight=2)
-
-        ttk.Label(left, text="Categories", font=("Segoe UI", 10, "bold")).pack(anchor=tk.W)
-        self.category_list = tk.Listbox(left, exportselection=False)
-        for category in self.grouped_tools:
-            self.category_list.insert(tk.END, category)
-        self.category_list.bind("<<ListboxSelect>>", self._on_category_selected)
-        self.category_list.pack(fill=tk.BOTH, expand=True, pady=(6, 8))
-
-        ttk.Label(left, text="Tools", font=("Segoe UI", 10, "bold")).pack(anchor=tk.W)
-        self.tool_list = tk.Listbox(left, exportselection=False)
-        self.tool_list.bind("<<ListboxSelect>>", self._on_tool_selected)
-        self.tool_list.pack(fill=tk.BOTH, expand=True)
-
-        self.tool_detail = ScrolledText(right, wrap=tk.WORD)
-        self.tool_detail.pack(fill=tk.BOTH, expand=True)
-
-        self.open_repo_btn = ttk.Button(right, text="Open Repository", command=self._open_repo)
-        self.open_repo_btn.pack(anchor=tk.E, pady=(8, 0))
-
-        self.selected_tool: Tool | None = None
-
-        self.category_list.selection_set(0)
-        self._on_category_selected()
-
-    def _build_btrfs_tab(self, parent: ttk.Frame) -> None:
-        text = ScrolledText(parent, wrap=tk.WORD)
-        text.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
-        lines: list[str] = [
-            "btrfs-progs functional coverage represented in this GUI:\n",
-        ]
-        for area in self.catalog.functional_areas:
-            lines.append(f"• {area.name}")
-            for command in area.commands:
-                lines.append(f"   - {command}")
-            lines.append("")
-        lines.append("Design note: each command family maps to dedicated UI workflows and context help.")
-        text.insert(tk.END, "\n".join(lines))
-        text.configure(state=tk.DISABLED)
-
-    def _on_section_selected(self, _event: object | None = None) -> None:
-        selection = self.section_list.curselection()
-        if not selection:
+    def _run(self) -> None:
+        params = {key: entry.get() for key, entry in self.entries.items()}
+        try:
+            result = run_operation(self.operation, params, dry_run=not self.allow_execute.get())
+        except ValueError as exc:
+            self.output.delete("1.0", tk.END)
+            self.output.insert(tk.END, f"Validation error: {exc}")
             return
-        idx = selection[0]
-        section = self.catalog.navigation[idx]
-        self.section_text.delete("1.0", tk.END)
-        self.section_text.insert(tk.END, f"{section['section']}\n\n{section['description']}")
-
-    def _on_category_selected(self, _event: object | None = None) -> None:
-        selection = self.category_list.curselection()
-        if not selection:
-            return
-        category = self.category_list.get(selection[0])
-        self.tool_list.delete(0, tk.END)
-        for tool in self.grouped_tools[category]:
-            self.tool_list.insert(tk.END, tool.name)
-        if self.tool_list.size() > 0:
-            self.tool_list.selection_set(0)
-            self._on_tool_selected()
-
-    def _on_tool_selected(self, _event: object | None = None) -> None:
-        category_sel = self.category_list.curselection()
-        tool_sel = self.tool_list.curselection()
-        if not category_sel or not tool_sel:
-            return
-        category = self.category_list.get(category_sel[0])
-        tool = self.grouped_tools[category][tool_sel[0]]
-        self.selected_tool = tool
 
         lines = [
-            f"Name: {tool.name}",
-            f"Category: {tool.category}",
-            f"Kind: {tool.kind}",
-            f"Repository: {tool.repo}",
-            f"Docs: {tool.docs}",
+            f"Operation: {self.operation.title}",
+            f"Command: {result.command}",
+            f"Return code: {result.returncode}",
             "",
-            "Suggested interaction patterns:",
+            "STDOUT:",
+            result.stdout,
+            "",
+            "STDERR:",
+            result.stderr,
         ]
-        lines.extend([f"  - {hint}" for hint in tool.interface_hints])
-
-        self.tool_detail.delete("1.0", tk.END)
-        self.tool_detail.insert(tk.END, "\n".join(lines))
-
-    def _open_repo(self) -> None:
-        if self.selected_tool is not None:
-            webbrowser.open(self.selected_tool.repo)
+        if result.blocked:
+            lines.insert(3, f"Blocked: {result.block_reason}")
+        self.output.delete("1.0", tk.END)
+        self.output.insert(tk.END, "\n".join(lines))
 
 
 def main() -> None:
-    app = DesktopBtrfsGui()
+    app = DesktopBtrfsAdmin()
     app.mainloop()
 
 
