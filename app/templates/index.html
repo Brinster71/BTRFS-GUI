@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BTRFS Admin Console</title>
+    <style>
+      body { margin: 0; font-family: Segoe UI, sans-serif; background: #0b1020; color: #f8fafc; }
+      .wrap { max-width: 1200px; margin: 0 auto; padding: 18px; }
+      .hero, .panel { background: #101a33; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: 340px 1fr; gap: 14px; }
+      .op { padding: 10px; border: 1px solid #334155; border-radius: 10px; margin-bottom: 8px; }
+      .selected { border-color: #22d3ee; background: #0f2448; }
+      label { display: block; margin-top: 8px; font-size: 14px; }
+      input, select, button { width: 100%; padding: 8px; margin-top: 4px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; }
+      button { background: #155e75; cursor: pointer; font-weight: 600; }
+      .small { font-size: 13px; color: #94a3b8; }
+      pre { background: #020617; border: 1px solid #334155; border-radius: 10px; padding: 10px; overflow: auto; }
+      .danger { color: #fda4af; }
+      .ok { color: #86efac; }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="hero">
+        <h1>BTRFS Administrative Console</h1>
+        <p>Real command execution for BTRFS administration workflows. Keep <strong>Dry Run</strong> checked to preview commands safely.</p>
+        <p class="small">For destructive operations, export <code>BTRFS_GUI_ALLOW_DESTRUCTIVE=true</code> before launching the app.</p>
+      </section>
+
+      <section class="grid">
+        <aside class="panel">
+          <h2>Operation Catalog</h2>
+          {% for op in operations %}
+          <div class="op {% if op.key == selected.key %}selected{% endif %}">
+            <strong>{{ op.title }}</strong><br />
+            <span class="small">{{ op.command_family }}{% if op.destructive %} · <span class="danger">destructive</span>{% endif %}</span>
+          </div>
+          {% endfor %}
+        </aside>
+
+        <article class="panel">
+          <h2>Run operation</h2>
+          <form method="post" action="/run">
+            <label>Operation</label>
+            <select name="operation" onchange="this.form.submit()">
+              {% for op in operations %}
+              <option value="{{ op.key }}" {% if op.key == selected.key %}selected{% endif %}>{{ op.title }}</option>
+              {% endfor %}
+            </select>
+
+            <p class="small">{{ selected.description }}</p>
+            {% for field in selected.fields %}
+            <label>{{ field.label }}</label>
+            <input type="text" name="{{ field.key }}" placeholder="{{ field.placeholder }}" value="{{ values.get(field.key, '') }}" {% if field.required %}required{% endif %}/>
+            {% endfor %}
+
+            <label><input type="checkbox" name="dry_run" checked style="width:auto;"/> Dry run (preview only)</label>
+            <button type="submit">Execute</button>
+          </form>
+
+          {% if result %}
+          <h3>Result</h3>
+          <p><strong>Command:</strong> <code>{{ result.command }}</code></p>
+          <p><strong>Return code:</strong> {% if result.returncode == 0 %}<span class="ok">0</span>{% else %}<span class="danger">{{ result.returncode }}</span>{% endif %}</p>
+          {% if result.blocked %}
+          <p class="danger">{{ result.block_reason }}</p>
+          {% endif %}
+          <h4>STDOUT</h4>
+          <pre>{{ result.stdout }}</pre>
+          <h4>STDERR</h4>
+          <pre>{{ result.stderr }}</pre>
+          {% endif %}
+        </article>
+      </section>
+    </div>
+  </body>
+</html>
